@@ -2,19 +2,8 @@ name: Upload Model from CivitAI to Hugging Face
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Runs every hour
-  workflow_dispatch:
-    inputs:
-      model_id:
-        description: 'CivitAI Model ID'
-        required: false
-      version_id:
-        description: 'CivitAI Model Version ID (optional)'
-        required: false
-      file_format:
-        description: 'File format (safetensors, ckpt, pt)'
-        required: true
-        default: 'safetensors'
+    - cron: '*/10 * * * *'  # Runs every 10 minutes
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
   upload-model:
