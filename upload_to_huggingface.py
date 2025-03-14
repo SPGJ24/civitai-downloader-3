@@ -1,4 +1,5 @@
 import argparse
+import os
 from huggingface_hub import HfApi
 
 def upload_model(model_path, repo_id, token):
@@ -6,7 +7,7 @@ def upload_model(model_path, repo_id, token):
     try:
         api.upload_file(
             path_or_fileobj=model_path,
-            path_in_repo=model_path,  # Use the same filename in the repo
+            path_in_repo=os.path.basename(model_path),  # Use the actual file name
             repo_id=repo_id,
             token=token,
             commit_message="Upload model from CivitAI",
