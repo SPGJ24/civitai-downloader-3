@@ -2,7 +2,7 @@ import requests
 import os
 import json
 
-CIVITAI_CREATOR_ID = "RUN165"  # Replace with the creator's ID
+CIVITAI_CREATOR_ID = "YOUR_CREATOR_ID"  # Replace with the creator's ID
 CIVITAI_TOKEN = os.getenv("CIVITAI_TOKEN")  # Use GitHub secret
 API_URL = f"https://civitai.com/api/v1/models?creatorId={CIVITAI_CREATOR_ID}"
 
@@ -35,7 +35,11 @@ if models:
             f.write(file_format)
         with open(LAST_MODEL_FILE, "w") as f:
             json.dump({"id": model_id, "version_id": version_id}, f)
-        print("::set-env name=NEW_MODEL_FOUND::true")
+        
+        # Set environment variable using environment file
+        with open(os.environ["GITHUB_ENV"], "a") as f:
+            f.write("NEW_MODEL_FOUND=true\n")
+        print("New model found. Environment variable set.")
     else:
         print("No new models found.")
 else:
