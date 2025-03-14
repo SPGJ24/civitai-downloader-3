@@ -1,0 +1,59 @@
+name: Upload Model from CivitAI to Hugging Face
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Runs every hour
+  workflow_dispatch:
+    inputs:
+      model_id:
+        description: 'CivitAI Model ID'
+        required: false
+      version_id:
+        description: 'CivitAI Model Version ID (optional)'
+        required: false
+      file_format:
+        description: 'File format (safetensors, ckpt, pt)'
+        required: true
+        default: 'safetensors'
+
+jobs:
+  upload-model:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install requests huggingface_hub
+
+      - name: Check for new models
+        run: |
+          python check_civitai_models.py
+
+      - name: Download model from CivitAI
+        if: env.NEW_MODEL_FOUND == 'true'
+        run: |
+          MODEL_ID=$(cat latest_model_id.txt)
+          VERSION_ID=$(cat latest_version_id.txt)
+          FILE_FORMAT=$(cat latest_file_format.txt)
+          CIVITAI_TOKEN=${{ secrets.CIVITAI_TOKEN }}
+          
+          if [[ -z "$VERSION_ID" ]]; then
+            DOWNLOAD_URL="https://civitai.com/api/download/models/$MODEL_ID?type=Model&format=$FILE_FORMAT&token=$CIVITAI_TOKEN"
+          else
+            DOWNLOAD_URL="https://civitai.com/api/download/models/$VERSION_ID?type=Model&format=$FILE_FORMAT&token=$CIVITAI_TOKEN"
+          fi
+          
+          curl -L -o model.$FILE_FORMAT "$DOWNLOAD_URL"
+          echo "Model downloaded successfully!"
+
+      - name: Upload model to Hugging Face
+        if: env.NEW_MODEL_FOUND == 'true'
+        run: |
+          python upload_to_huggingface.py --model_path model.${{ github.event.inputs.file_format }} --repo_id ${{ secrets.HF_REPO_ID }} --token ${{ secrets.HF_TOKEN }}
