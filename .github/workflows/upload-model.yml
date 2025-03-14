@@ -25,6 +25,16 @@ jobs:
         run: |
           python check_civitai_models.py
 
+      - name: Debug environment variable
+        run: |
+          echo "NEW_MODEL_FOUND: $NEW_MODEL_FOUND"
+
+      - name: Debug files
+        run: |
+          echo "Latest Model ID: $(cat latest_model_id.txt)"
+          echo "Latest Version ID: $(cat latest_version_id.txt)"
+          echo "Latest File Format: $(cat latest_file_format.txt)"
+
       - name: Download model from CivitAI
         if: env.NEW_MODEL_FOUND == 'true'
         run: |
@@ -39,10 +49,12 @@ jobs:
             DOWNLOAD_URL="https://civitai.com/api/download/models/$VERSION_ID?type=Model&format=$FILE_FORMAT&token=$CIVITAI_TOKEN"
           fi
           
-          curl -L -o model.$FILE_FORMAT "$DOWNLOAD_URL"
+          echo "Download URL: $DOWNLOAD_URL"
+          curl -L -o "model.$FILE_FORMAT" "$DOWNLOAD_URL"
           echo "Model downloaded successfully!"
 
       - name: Upload model to Hugging Face
         if: env.NEW_MODEL_FOUND == 'true'
         run: |
-          python upload_to_huggingface.py --model_path model.${{ github.event.inputs.file_format }} --repo_id ${{ secrets.HF_REPO_ID }} --token ${{ secrets.HF_TOKEN }}
+          FILE_FORMAT=$(cat latest_file_format.txt)
+          python upload_to_huggingface.py --model_path "model.$FILE_FORMAT" --repo_id ${{ secrets.HF_REPO_ID }} --token ${{ secrets.HF_TOKEN }}
