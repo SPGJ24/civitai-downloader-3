@@ -2,7 +2,7 @@ import requests
 import os
 import json
 
-CIVITAI_CREATOR_ID = "YOUR_CREATOR_ID"  # Replace with the creator's ID
+CIVITAI_CREATOR_ID = "RUN165"  # Replace with the creator's ID
 CIVITAI_TOKEN = os.getenv("CIVITAI_TOKEN")  # Use GitHub secret
 API_URL = f"https://civitai.com/api/v1/models?creatorId={CIVITAI_CREATOR_ID}"
 
